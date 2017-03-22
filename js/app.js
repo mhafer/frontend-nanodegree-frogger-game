@@ -1,69 +1,91 @@
 var allEnemies = []; // stores all enemy objects
 var player;
 
+var enemy_values = [60,145,230,315];
+var enemy_speeds = [200, 250, 280, 300, 320, 350, 400];
 
-// The Helper class. Contains methods used for general actions throughout the game
-// that are not specific to any one object.
+
+
+/*
+ *      HELPER CLASS
+ */
+
 var Helper = function(){}
+
  // Function returns a random value
 Helper.returnRandom = function(values){
     var random = Math.floor(Math.random() * values.length);
     return values[random];
 }
-/*
- * Function checks whether two elements on the canvas overlap or touch.
- * Takes in two figures as parameters and returns a boolean. The word player
- * is used for clarity only; any figures can be parameters.
- */
-Helper.collision = function(fig1, player){
-    //return ((fig1.x == player.x) && (fig1.y == player.y));
-}
 
 /*
  * Function takes two game elements and returns 
- * true if they are in the same block. Used for gem collisions, 
- * since an exact overlap is not required. The player 
- * just needs to be on the same block as the gem.
+ * true if they are in the same block. 
  */ 
-Helper.collection = function(fig1, player){
-    // var fig1Row = Helper.getRow(fig1);
-    // var fig1Col = Helper.getCol(fig1);
-    // var playerRow = Helper.getRow(player);
-    // var playerCol = Helper.getCol(player);
-    // if(fig1Row == playerRow && fig1Col == playerCol){
-    //     return true;
-    // }
+Helper.collection = function(token, player){
+    
+    //get the coordinate of the token
+    var tokenCol = Helper.getCol(token);
+    var tokenRow = Helper.getRow(token);
+    
+    //get the coordinate of the player
+    var playerCol = Helper.getCol(player);
+    var playerRow = Helper.getRow(player);
+
+    //check for match
+    if(tokenRow == playerRow && tokenCol == playerCol){
+        return true;
+    }
 }
 
-// Enemies our player must avoid
+Helper.getCol = function(position){
+
+    var col = -1;
+
+    if(position.x > 100){
+        col = 0;
+    } else if (position.x > 200){
+        col = 1;
+    } else if (position.x > 300){
+        col = 2;
+    } else if (position.x > 400){
+        col = 3;
+    } else if (position.x > 500){
+        col = 4;
+    }
+    return col;
+}
+
+Helper.getRow = function(position){
+    var row = -1;
+
+    if(position.y > 100){
+        row = 0;
+    } else if (position.y > 200){
+        row = 1;
+    } else if (position.y > 300){
+        row = 2;
+    } else if (position.y > 400){
+        row = 3;
+    } else if (position.y > 500){
+        row = 4;
+    }
+    return row;
+
+}
+
+
+/*
+ *      ENEMY CLASS - our player must avoid
+ */
+
 var Enemy = function() {
-    // The image/sprite for our enemies, this uses
-    // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
     this.x = 0;
-    this.y = Helper.returnRandom([72,154,236,318]);
-    this.speed = Helper.returnRandom([200, 250, 280, 300, 320, 350, 400]);
-}
-
-// Update the enemy's position, required method for game
-// Parameter: dt, a time delta between ticks
-Enemy.prototype.update = function(dt) {
-    // You should multiply any movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
-    // this.x += this.speed * dt;
-     this.x = this.x + (dt * 300 * Math.random());
-     allEnemies.forEach(function(enemy, index) {
-        if(Helper.collision(enemy, player)){
-            player.y = 400;
-        }
-    });
-
-
-     /*
-         if (this.x > maxPos) {
-        this.reset();
-        */
+    this.y = Helper.returnRandom(enemy_values);
+    this.speed = Helper.returnRandom(enemy_speeds);
+    this.width = 101;
+    this.height = 171;
 }
 
 // Draw the enemy on the screen, required method for game
@@ -71,19 +93,57 @@ Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 }
 
-Enemy.prototype.reset = function() {
-    this.x = 0;
-    this.y = Helper.returnRandom([50,135,220,305]);
-    this.speed = Helper.returnRandom([200, 250, 280, 300, 320, 350, 400]);
+// Update the enemy's position, required method for game
+// Parameter: dt, a time delta between ticks
+Enemy.prototype.update = function(dt) {
+
+    // multiple by dt to ensure the game runs at the same speed for all computers.
+     this.x = this.x + 101 *dt; // (dt * 300 * Math.random());
+
+    // check for enemy/player collision
+    if (this.y == player.y && (this.x > player.x - 68 && this.x < player.x + 68)) {
+            //player.reset();
+            player.y = 400;
+        }
 }
 
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
+// generates a continuous array
+// game will generate faster as score increases
+Enemy.generateArmy = function() {
+    allEnemies.push(new Enemy());
+    Enemy.remove();
+    var delay = 750;
+    // if(score >= 200){
+    //     delay = Helper.returnRandom([0, 200, 500, 600, 700]); 
+    //  } else if(score >= 100){
+    //     delay = Helper.returnRandom([0, 400, 600, 800]); 
+    //  } else {
+    //     delay = Helper.returnRandom([500, 750, 1000]); 
+    //  }
+    setTimeout(Enemy.generateArmy, delay);
+}
+
+// once the enemy moves off the board it is removed from the array
+// clean up enemies
+Enemy.remove = function() {
+    allEnemies.forEach(function(enemy, index) {
+        if(enemy.x > 500){
+            allEnemies.splice(index, 1);
+        }
+    });
+}
+
+
+/*
+ *      PLAYER CLASS
+ */
+
 var Player = function() {
     this.spritePlayer = "images/char-boy.png";
-    this.x = 200;
+    this.x = 202;
     this.y = 400;
+    this.width = 101;
+    this.height = 171;
 }
 
 // Draw the player on the screen, required method for game
@@ -95,15 +155,15 @@ Player.prototype.render = function(){
 //ensures that the player stays within the canvas x and y range
 Player.prototype.update = function(){
     if (this.x < 0) {
-        this.x = 0;
-    } else if (this.x > 400) {
-        this.x = 400;
+        this.x = 0; //protects left bounds
+    } else if (this.x > 404) {
+        this.x = 404; //protects right bounds
     } else if (this.y === 0) {
-        this.y = 400;
+        this.y = 400; 
     } else if (this.y < 0) {
-        this.y = 400;
+        this.y = 400; //reaches the water
     } else if (this.y > 400) {
-        this.y = 400;
+        this.y = 400; //protects bottom bounds
     }
 }
 
@@ -111,16 +171,16 @@ Player.prototype.update = function(){
 Player.prototype.handleInput = function(key){
       switch (key) {
         case 'left':
-            this.x = this.x - 100;
+            this.x = this.x - 101;
             break;
         case 'up':
-            this.y = this.y - 82;  //adjusted to fit image size
+            this.y = this.y - 85; 
             break;
         case 'right':
-            this.x = this.x + 100;
+            this.x = this.x + 101;
             break;
         case 'down':
-            this.y = this.y + 82;
+            this.y = this.y + 85;
             break;
     }
 }
@@ -130,19 +190,9 @@ Player.prototype.reset = function(x, y) {
     this.y = 400;
 }
 
-
-
-// Now instantiate your objects.
-// Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
-allEnemies = [
-  new Enemy(),
-  new Enemy(),
-  new Enemy()
-];
+// Instantiate Objects
+Enemy.generateArmy();
 player = new Player();
-//var prize = new Prize();
-//var start = new Start();
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
