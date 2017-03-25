@@ -1,3 +1,42 @@
 body {
     text-align: center;
+    font-family: 'Open Sans', sans-serif;
+	background: linear-gradient(45deg, hsla(340, 100%, 55%, .5) 0%, hsla(340, 100%, 55%, 0) 70%), 
+    			linear-gradient(135deg, hsla(225, 95%, 50%, .7) 10%, hsla(225, 95%, 50%, 0) 80%), 
+    			linear-gradient(225deg, hsla(140, 90%, 50%, 1) 10%, hsla(140, 90%, 50%, 0) 80%), 
+    			linear-gradient(315deg, hsla(35, 95%, 55%, 1) 100%, hsla(35, 95%, 55%, 0) 70%);
+ }   
+
+h1 {
+	font-family: 'Luckiest Guy', cursive;
+	font-size: 55px;
+	color: #fff;
+	-webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: black;
+
 }
+
+h2 {
+	margin-bottom:  0;
+	padding-bottom: 0;
+}
+
+#lifeline,
+#scoreboard,
+#level {
+	font-size: 25px;
+	font-weight: bold;
+	color: #fff;
+	-webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: black;
+}
+
+audio{
+	position: fixed;
+    left: 0%;
+    top: 0%;
+}
+
+
+
+

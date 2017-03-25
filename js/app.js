@@ -1,79 +1,115 @@
-var allEnemies = []; // stores all enemy objects
+var allEnemies = [];
 var player;
+
+var playerWins = false;
+var players_time;
 
 var enemy_values = [60,145,230,315];
 var enemy_speeds = [200, 250, 280, 300, 320, 350, 400];
 
+var level = 1;
+var score = 0;
+var life = 3;
+
+var alert_level_2 = true;
+var alert_level_3 = true;
+
+/*
+ *      Set up timer
+ *      code is derived from https://jsfiddle.net/Daniel_Hug/pvk6p/ 
+ *      sets up a simple on screen timer
+ */
+
+//retrieve element and set to 00:00:00
+var stopwatch = document.getElementsByTagName('h2')[0],
+    seconds = 0, 
+    minutes = 0, 
+    hours = 0,
+    t;
+
+//this is called every second, increases by 1 second each time it's called
+function add() {
+    seconds++;
+    if (seconds >= 60) {
+        seconds = 0;
+        minutes++;
+        if (minutes >= 60) {
+            minutes = 0;
+            hours++;
+        }
+    }
+    
+    //properly format the time
+    stopwatch.textContent = (hours ? (hours > 9 ? hours : "0" + hours) : "00") + ":" + 
+                            (minutes ? (minutes > 9 ? minutes : "0" + minutes) : "00") + ":" + 
+                            (seconds > 9 ? seconds : "0" + seconds);
+    //calls timer (creates a continuous loop --> timer calls add, add calls timer)
+    timer();
+}
+
+//calls the add() every second
+function timer() {
+    t = setTimeout(add, 1000);
+}
+
+//initial timer call, begins the stopwatch
+timer();  
 
 
 /*
  *      HELPER CLASS
+ *      contains Globally used methods
  */
 
 var Helper = function(){}
 
- // Function returns a random value
+// Function returns a random value
 Helper.returnRandom = function(values){
     var random = Math.floor(Math.random() * values.length);
     return values[random];
 }
 
-/*
- * Function takes two game elements and returns 
- * true if they are in the same block. 
- */ 
-Helper.collection = function(token, player){
-    
-    //get the coordinate of the token
-    var tokenCol = Helper.getCol(token);
-    var tokenRow = Helper.getRow(token);
-    
-    //get the coordinate of the player
-    var playerCol = Helper.getCol(player);
-    var playerRow = Helper.getRow(player);
+// Called when score = 300 or lives = 0
+Helper.reset = function (){
 
-    //check for match
-    if(tokenRow == playerRow && tokenCol == playerCol){
-        return true;
-    }
-}
+    // gets the finished time
+    players_time = document.getElementById("timer").innerHTML;        
+    //msg depends if boolean playerWins is true or false
+    var msg;
+    playerWins? msg = "Congratulations! You beat the game in just " + players_time + 
+                "! <br><br> Would you like to play again and try to beat your time?" : 
+                msg = "Oh no! You died. Would you like to play again?";
 
-Helper.getCol = function(position){
+    // fancy confirmation box via bootbox.js
+    bootbox.confirm({
+        message: msg,
+        buttons: {
+            confirm: {
+                label: 'Yes',
+                className: 'btn-success'
+            },
+            cancel: {
+                label: 'No',
+                className: 'btn-danger'
+            }
+        },
+        callback: function (result) {   
+            //callback takes the result of the users input (play again or not) and either reloads the page or over writes it      
+           result ? location.reload() : document.write("<h1 style='text-align:center;'>Thanks for playing!</h1>");                
+        }
+    });       
+ }
 
-    var col = -1;
 
-    if(position.x > 100){
-        col = 0;
-    } else if (position.x > 200){
-        col = 1;
-    } else if (position.x > 300){
-        col = 2;
-    } else if (position.x > 400){
-        col = 3;
-    } else if (position.x > 500){
-        col = 4;
-    }
-    return col;
-}
+// This will pop up every time a level is reached
+ Helper.nextLevel = function (next){
 
-Helper.getRow = function(position){
-    var row = -1;
-
-    if(position.y > 100){
-        row = 0;
-    } else if (position.y > 200){
-        row = 1;
-    } else if (position.y > 300){
-        row = 2;
-    } else if (position.y > 400){
-        row = 3;
-    } else if (position.y > 500){
-        row = 4;
-    }
-    return row;
+    bootbox.alert({
+            message: "Hooray, you're on level " + next + "! Keep Going!",
+            size: 'small'
+        });
 
 }
-
 
 /*
  *      ENEMY CLASS - our player must avoid
@@ -82,10 +118,8 @@ Helper.getRow = function(position){
 var Enemy = function() {
     this.sprite = 'images/enemy-bug.png';
     this.x = 0;
-    this.y = Helper.returnRandom(enemy_values);
-    this.speed = Helper.returnRandom(enemy_speeds);
-    this.width = 101;
-    this.height = 171;
+    this.y = Helper.returnRandom(enemy_values);         //returns a randon y value
+    this.speed = Helper.returnRandom(enemy_speeds);     //returns a random speed
 }
 
 // Draw the enemy on the screen, required method for game
@@ -98,28 +132,31 @@ Enemy.prototype.render = function() {
 Enemy.prototype.update = function(dt) {
 
     // multiple by dt to ensure the game runs at the same speed for all computers.
-     this.x = this.x + 101 *dt; // (dt * 300 * Math.random());
+     this.x = this.x + 75 * dt; // (dt * 300 * Math.random());
 
     // check for enemy/player collision
     if (this.y == player.y && (this.x > player.x - 68 && this.x < player.x + 68)) {
-            //player.reset();
-            player.y = 400;
+            player.reset();
         }
 }
 
-// generates a continuous array
-// game will generate faster as score increases
+/*
+ * This function generates a continuous array and enemy objects. 
+ * The remove() will splice the array once the object is off the canvas.
+ * The delay is set depending on the  the score. 
+ * The higher the score, the shorter the delay...
+ * ...which means more enemies on the canvas at once!
+ */
 Enemy.generateArmy = function() {
     allEnemies.push(new Enemy());
     Enemy.remove();
-    var delay = 750;
-    // if(score >= 200){
-    //     delay = Helper.returnRandom([0, 200, 500, 600, 700]); 
-    //  } else if(score >= 100){
-    //     delay = Helper.returnRandom([0, 400, 600, 800]); 
-    //  } else {
-    //     delay = Helper.returnRandom([500, 750, 1000]); 
-    //  }
+    if(score > 200){
+        delay = Helper.returnRandom([600, 700, 1000]);       
+     } else if(score > 100){
+        delay = Helper.returnRandom([600, 900, 1100, 1500]); 
+     } else {
+        delay = Helper.returnRandom([1000, 2000, 3000]);
+     }
     setTimeout(Enemy.generateArmy, delay);
 }
 
@@ -142,8 +179,6 @@ var Player = function() {
     this.spritePlayer = "images/char-boy.png";
     this.x = 202;
     this.y = 400;
-    this.width = 101;
-    this.height = 171;
 }
 
 // Draw the player on the screen, required method for game
@@ -162,9 +197,36 @@ Player.prototype.update = function(){
         this.y = 400; 
     } else if (this.y < 0) {
         this.y = 400; //reaches the water
+        score += 10;
     } else if (this.y > 400) {
         this.y = 400; //protects bottom bounds
     }
+
+    //adjust the level to reflect the score
+    //an alert is triggered only one time, when they first reach the next score span
+    if(score < 100){
+        level = 1;
+    } else if (score >= 100 && score < 200){
+        level = 2;
+        alert_level_2 ? Helper.nextLevel(level) : null;          
+        alert_level_2 = false;
+    } else if (score >= 200 && score < 300){
+        level = 3;
+        alert_level_3 ? Helper.nextLevel(level) : null;
+        alert_level_3 = false;
+    } else if (score == 300){
+        player.wins();                 //player wins once they reach 300 points
+    }
+
+
+
+    // updates the score HTML
+    var players_score = document.getElementById("scoreboard");
+    players_score.innerHTML = "Score: " + score;
+    // updates the level HTML
+    var game_level = document.getElementById("level");
+    game_level.innerHTML = "Level: " + level;
+
 }
 
 //handles key input and moves player l, r, up, or down
@@ -186,8 +248,25 @@ Player.prototype.handleInput = function(key){
 }
 
 Player.prototype.reset = function(x, y) {
-    this.x = 200;
-    this.y = 400;
+
+    this.x = 202;                                       // reset x value
+    this.y = 400;                                       // reset y value
+    life--;                                             // decrease life
+    var lives = document.getElementById("lifeline");    // update lives HTML
+    lives.innerHTML = "Lives: " + life;
+    if(life == 0){                                      // check for lose
+        clearTimeout(t);                                // stops the time
+        Helper.reset();                                 // calls reset()
+    }  
+}
+
+Player.prototype.wins = function(x, y) {
+
+    this.x = 202;                                       // reset x value
+    this.y = 400;                                       // reset y value
+    playerWins = true;                                  // sets boolean value to true (needed for display message)
+    clearTimeout(t);                                    // stops the time
+    Helper.reset();                                     // calls reset --> confirmation box pops up
 }
 
 // Instantiate Objects
