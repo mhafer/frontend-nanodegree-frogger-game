@@ -1,6 +1,29 @@
-frontend-nanodegree-arcade-game
-===============================
+# Frogger - Part of Udacity's FEND
 
-Students should use this [rubric](https://review.udacity.com/#!/projects/2696458597/rubric) for self-checking their submission. Make sure the functions you write are **object-oriented** - either class functions (like Player and Enemy) or class prototype functions such as Enemy.prototype.checkCollisions, and that the keyword 'this' is used appropriately within your class and class prototype functions to refer to the object the function is called upon. Also be sure that the **readme.md** file is updated with your instructions on both how to 1. Run and 2. Play your arcade game.
+## A classic arcade game with object-orientated JavaScript :+1:
 
-For detailed instructions on how to get started, check out this [guide](https://docs.google.com/document/d/1v01aScPjSWCCWQLIpFqvg3-vXLH2e8_SZQKC8jNO0Dc/pub?embedded=true).
+### Objective
+- Make it to the other side without touching any bugs!
+
+### How To Play
+- use the :arrow_right: :arrow_up: :arrow_down: :arrow_left: keys to move around
+- Each time you reach the water you get 10 points
+- You have 3 lives, if you get touched by a bug you lose a life!
+- Each level you reach the game will increase in intensity
+
+### Levels
+
+1. Level 1, 0-100 points
+2. Level 2, 100-200 points
+3. Level 3, 200-300 points
+Make it to the end of level 3 and WIN THE GAME!:dancers:
+
+### What I learned:
+- [x] How to manipulate an HTML canvas
+- [x] Object-oriented JavaScript
+- [x] Cool gradient background technique as well as audio!
+
+To play the game [click here](https://mhafer.github.io/frontend-nanodegree-frogger-game/)!
+
+See Udacity's official [project rubric](https://review.udacity.com/#!/projects/2696458597/rubric)
+See Udacity's official [project rubric](https://review.udacity.com/#!/projects/2696458597/rubric)
