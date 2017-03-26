@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Effective JavaScript: Frogger</title>
-    <link href="https://fonts.googleapis.com/css?family=Luckiest+Guy|Open+Sans" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Luckiest+Guy%7COpen+Sans" rel="stylesheet">
      <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<!-- Optional theme -->
@@ -13,21 +13,24 @@
 <body>
 <div class="row header">
 	<div class="col-sm-12 col-md-12 col-lg-12">
-		<audio controls loop autoplay="true">
+		<audio controls loop autoplay>
 			<source src="audio/super_mario_bros.mp3" type="audio/mpeg">
 			Your browser does not support the audio element.
 		</audio>
 		<h1>FROGGER</h1>
 	</div>
 </div>
-<div class="row stats">
-	<div class="col-sm-4 col-md-2 col-md-offset-3" id="lifeline">Life: 3</div>
-	<div class="col-sm-4 col-md-2" id="scoreboard">Score: 0</div>
-	<div class="col-sm-4 col-md-2" id="level">Level: 1</div>
-</div>
-<div class="row clock">
-	<div class="col-sm-12 col-md-12 col-lg-12">
-		<h2 id="timer"><time>00:00:00</time></h2>
+<!-- end-game div will be replaced with a thank you message at game's end -->
+<div id="end-game">
+	<div class="row stats">
+		<div class="col-sm-4 col-md-2 col-md-offset-3" id="lifeline">Life: 3</div>
+		<div class="col-sm-4 col-md-2" id="scoreboard">Score: 0</div>
+		<div class="col-sm-4 col-md-2" id="level">Level: 1</div>
+	</div>
+	<div class="row clock">
+		<div class="col-sm-12 col-md-12 col-lg-12">
+			<h2 id="timer"><time>00:00:00</time></h2>
+		</div>
 	</div>
 </div>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>

@@ -1,11 +1,11 @@
 var allEnemies = [];
 var player;
 
-var playerWins = false;
+var playerWins;
 var players_time;
 
-var enemy_values = [60,145,230,315];
-var enemy_speeds = [200, 250, 280, 300, 320, 350, 400];
+var ENEMY_VALUES = [60,145,230,315];
+var ENEMY_SPEEDS = [200, 250, 280, 300, 320, 350, 400];
 
 var level = 1;
 var score = 0;
@@ -57,59 +57,60 @@ timer();
 
 
 /*
- *      HELPER CLASS
+ *      HELPER Object
  *      contains Globally used methods
  */
 
-var Helper = function(){}
+var helper = {
 
-// Function returns a random value
-Helper.returnRandom = function(values){
-    var random = Math.floor(Math.random() * values.length);
-    return values[random];
-}
-
-// Called when score = 300 or lives = 0
-Helper.reset = function (){
-
-    // gets the finished time
-    players_time = document.getElementById("timer").innerHTML;        
-    //msg depends if boolean playerWins is true or false
-    var msg;
-    playerWins? msg = "Congratulations! You beat the game in just " + players_time + 
-                "! <br><br> Would you like to play again and try to beat your time?" : 
-                msg = "Oh no! You died. Would you like to play again?";
-
-    // fancy confirmation box via bootbox.js
-    bootbox.confirm({
-        message: msg,
-        buttons: {
-            confirm: {
-                label: 'Yes',
-                className: 'btn-success'
+    // Function returns a random value
+    returnRandom : function(values){
+        var random = Math.floor(Math.random() * values.length);
+        return values[random];
+    },
+    // Called when score = 300 or lives = 0
+    reset : function (){
+        //stop the clock
+        clearTimeout(t);
+        // gets the finished time
+        players_time = document.getElementById("timer").innerHTML;        
+        //msg depends if boolean playerWins is true or false   
+        var msg = (player.win) ?  "Congratulations! You beat the game in just " + players_time + "! <br><br> Would you like to play again and try to beat your time?" : "Oh no! You died. Would you like to play again?";
+        // fancy confirmation box via bootbox.js
+        bootbox.confirm({
+            message: msg,
+            buttons: {
+                confirm: {
+                    label: 'Yes',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: 'No',
+                    className: 'btn-danger'
+                }
             },
-            cancel: {
-                label: 'No',
-                className: 'btn-danger'
+            callback: function (result) {   
+                //callback takes the result of the users input (play again or not) and either reloads the page or over writes it      
+              if(result){
+                location.reload();            
+              }else{
+                $("#end-game").empty();
+                var para = document.createElement("h1");
+                var t = document.createTextNode("Thanks for playing");
+                para.appendChild(t);
+                document.getElementById("end-game").appendChild(para);
+              }
             }
-        },
-        callback: function (result) {   
-            //callback takes the result of the users input (play again or not) and either reloads the page or over writes it      
-           result ? location.reload() : document.write("<h1 style='text-align:center;'>Thanks for playing!</h1>");                
-        }
-    });       
- }
-
-
-// This will pop up every time a level is reached
- Helper.nextLevel = function (next){
-
-    bootbox.alert({
-            message: "Hooray, you're on level " + next + "! Keep Going!",
-            size: 'small'
-        });
-
-}
+        });      
+     },
+     // This will pop up every time a level is reached
+     nextLevel : function (next){
+        bootbox.alert({
+                message: "Hooray, you're on level " + next + "! Keep Going!",
+                size: 'small'
+            });
+    }
+};
 
 /*
  *      ENEMY CLASS - our player must avoid
@@ -117,15 +118,15 @@ Helper.reset = function (){
 
 var Enemy = function() {
     this.sprite = 'images/enemy-bug.png';
-    this.x = 0;
-    this.y = Helper.returnRandom(enemy_values);         //returns a randon y value
-    this.speed = Helper.returnRandom(enemy_speeds);     //returns a random speed
-}
+    this.x = -100;                                      //start off screen and glide in
+    this.y = helper.returnRandom(ENEMY_VALUES);         //returns a randon y value
+    this.speed = helper.returnRandom(ENEMY_SPEEDS);     //returns a random speed
+};
 
 // Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-}
+};
 
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
@@ -135,10 +136,8 @@ Enemy.prototype.update = function(dt) {
      this.x = this.x + 75 * dt; // (dt * 300 * Math.random());
 
     // check for enemy/player collision
-    if (this.y == player.y && (this.x > player.x - 68 && this.x < player.x + 68)) {
-            player.reset();
-        }
-}
+    if (this.y == player.y && (this.x > player.x - 68 && this.x < player.x + 68)) player.reset();
+};
 
 /*
  * This function generates a continuous array and enemy objects. 
@@ -148,17 +147,17 @@ Enemy.prototype.update = function(dt) {
  * ...which means more enemies on the canvas at once!
  */
 Enemy.generateArmy = function() {
-    allEnemies.push(new Enemy());
+    allEnemies.push(new Enemy(-100,helper.returnRandom(ENEMY_VALUES),'images/enemy-bug.png'));
     Enemy.remove();
     if(score > 200){
-        delay = Helper.returnRandom([600, 700, 1000]);       
+        delay = helper.returnRandom([600, 700, 1000]);       
      } else if(score > 100){
-        delay = Helper.returnRandom([600, 900, 1100, 1500]); 
+        delay = helper.returnRandom([600, 900, 1100, 1500]); 
      } else {
-        delay = Helper.returnRandom([1000, 2000, 3000]);
+        delay = helper.returnRandom([1000, 2000, 3000]);
      }
     setTimeout(Enemy.generateArmy, delay);
-}
+};
 
 // once the enemy moves off the board it is removed from the array
 // clean up enemies
@@ -168,7 +167,7 @@ Enemy.remove = function() {
             allEnemies.splice(index, 1);
         }
     });
-}
+};
 
 
 /*
@@ -179,12 +178,13 @@ var Player = function() {
     this.spritePlayer = "images/char-boy.png";
     this.x = 202;
     this.y = 400;
-}
+    this.win = false;
+};
 
 // Draw the player on the screen, required method for game
 Player.prototype.render = function(){
     ctx.drawImage(Resources.get(this.spritePlayer), this.x, this.y);
-}
+};
 
 // Update the players's position, required method for game
 //ensures that the player stays within the canvas x and y range
@@ -208,17 +208,16 @@ Player.prototype.update = function(){
         level = 1;
     } else if (score >= 100 && score < 200){
         level = 2;
-        alert_level_2 ? Helper.nextLevel(level) : null;          
+        if(alert_level_2) helper.nextLevel(level);                    //once it enters the next level threshhold an display message will trigger once
         alert_level_2 = false;
     } else if (score >= 200 && score < 300){
         level = 3;
-        alert_level_3 ? Helper.nextLevel(level) : null;
+        if(alert_level_3) helper.nextLevel(level);                    //once it enters the next level threshhold an display message will trigger once
         alert_level_3 = false;
     } else if (score == 300){
-        player.wins();                 //player wins once they reach 300 points
+        player.win = true;                              //player has reached the max score
+        helper.reset();                                 //alert message is called
     }
-
-
 
     // updates the score HTML
     var players_score = document.getElementById("scoreboard");
@@ -227,7 +226,7 @@ Player.prototype.update = function(){
     var game_level = document.getElementById("level");
     game_level.innerHTML = "Level: " + level;
 
-}
+};
 
 //handles key input and moves player l, r, up, or down
 Player.prototype.handleInput = function(key){
@@ -245,7 +244,7 @@ Player.prototype.handleInput = function(key){
             this.y = this.y + 85;
             break;
     }
-}
+};
 
 Player.prototype.reset = function(x, y) {
 
@@ -254,20 +253,11 @@ Player.prototype.reset = function(x, y) {
     life--;                                             // decrease life
     var lives = document.getElementById("lifeline");    // update lives HTML
     lives.innerHTML = "Lives: " + life;
-    if(life == 0){                                      // check for lose
-        clearTimeout(t);                                // stops the time
-        Helper.reset();                                 // calls reset()
+    if(life === 0){                                      // check for lose
+        helper.reset();                                  // calls reset()
+        player.win = true;                               // prevents the game engine from looping again
     }  
-}
-
-Player.prototype.wins = function(x, y) {
-
-    this.x = 202;                                       // reset x value
-    this.y = 400;                                       // reset y value
-    playerWins = true;                                  // sets boolean value to true (needed for display message)
-    clearTimeout(t);                                    // stops the time
-    Helper.reset();                                     // calls reset --> confirmation box pops up
-}
+};
 
 // Instantiate Objects
 Enemy.generateArmy();
