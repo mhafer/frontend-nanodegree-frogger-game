@@ -1,7 +1,6 @@
 var allEnemies = [];
 var player;
 
-var playerWins;
 var players_time;
 
 var ENEMY_VALUES = [60,145,230,315];
